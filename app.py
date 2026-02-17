@@ -12,12 +12,15 @@ guardar_inventario(inventario_prueba)
 # cargar datos
 datos = cargar_inventario()
 
-print(datos)
+from flask import Flask, render_template
 
-print("Guardando inventario...")
-guardar_inventario(inventario_prueba)
+app = Flask(__name__)
+@app.route('/')
+@app.route('/inventario')
+def index():
+    return render_template('inventario/lista.html', datos = datos)
 
-print("Cargando inventario...")
-datos = cargar_inventario()
 
-print("Datos cargados:", datos)
+
+
+
