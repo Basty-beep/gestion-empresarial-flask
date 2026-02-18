@@ -4,17 +4,23 @@
     <title>Inventario</title>
 </head>
 <body>
-    <h1>Lista de Productos</h1>
-    <ul>
-        {% for producto in datos %}
 
-        <li>{{producto}} </li>
+<h1>Lista de Productos</h1>
 
-        {% endfor %}
+<a href="/inventario/agregar">Agregar producto</a>
 
-    </ul>
-    
+<ul>
+{% for nombre, info in datos.items() %}
+    <li>
+        <b>{{ nombre }}</b> |
+        Precio: {{ info.precio }} |
+        Cantidad: {{ info.cantidad }} |
+        Categoría: {{ info.categoria }}
+    </li>
+{% else %}
+    <li>No hay productos en inventario</li>
+{% endfor %}
+</ul>
 
-    
 </body>
 </html>
