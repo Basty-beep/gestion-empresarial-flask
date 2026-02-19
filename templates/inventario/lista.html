@@ -12,10 +12,15 @@
 <ul>
 {% for nombre, info in datos.items() %}
     <li>
-        <b>{{ nombre }}</b> |
+         <b>{{ nombre }}</b> |
         Precio: {{ info.precio }} |
         Cantidad: {{ info.cantidad }} |
         Categoría: {{ info.categoria }}
+
+        <a href="{{ url_for('eliminar', nombre=nombre) }}"
+        onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+        Eliminar
+        </a>
     </li>
 {% else %}
     <li>No hay productos en inventario</li>

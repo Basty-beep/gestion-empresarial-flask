@@ -37,6 +37,17 @@ def agregar():
     return render_template('inventario/agregar.html')
 
 
+# Eliminar productos
+@app.route('/inventario/eliminar/<nombre>')
+def eliminar(nombre):
 
+    # cargar inventario actual
+    inventario = cargar_inventario()
 
+    # verificar si existe el producto
+    if nombre in inventario:
+        del inventario[nombre]   # eliminar producto
+        guardar_inventario(inventario)
 
+    # volver a la lista
+    return redirect(url_for('index'))
