@@ -2,10 +2,12 @@ from modulos.inventario import cargar_inventario, guardar_inventario
 
 from flask import Flask, render_template, request, url_for, redirect
 
+import json
+
 app = Flask(__name__)
 @app.route('/')
 @app.route('/inventario')
-def index():
+def inventario():
     datos = cargar_inventario()
     return render_template('inventario/lista.html', datos=datos)
 
@@ -33,7 +35,7 @@ def agregar():
         guardar_inventario(inventario)
 
         # volver a la lista
-        return redirect(url_for('index'))
+        return redirect(url_for('inventario'))
     return render_template('inventario/agregar.html')
 
 
@@ -50,4 +52,38 @@ def eliminar(nombre):
         guardar_inventario(inventario)
 
     # volver a la lista
-    return redirect(url_for('index'))
+    return redirect(url_for('inventario'))
+
+# Editar producto
+@app.route('/inventario/editar/<nombre>', methods=['GET','POST'])
+def editar(nombre):
+
+    datos = cargar_inventario()
+
+    if nombre not in datos:
+        return "Producto no encontrado"
+
+    if request.method == 'POST':
+
+        nuevo_nombre = request.form['nombre']
+        precio = int(request.form['precio'])
+        cantidad = int(request.form['cantidad'])
+        categoria = request.form['categoria']
+
+        datos.pop(nombre)
+
+        datos[nuevo_nombre] = {
+            "precio": precio,
+            "cantidad": cantidad,
+            "categoria": categoria
+        }
+
+        guardar_inventario(datos)
+
+        return redirect(url_for('inventario'))
+
+    return render_template(
+        'inventario/editar.html',
+        nombre=nombre,
+        info=datos[nombre]
+    )

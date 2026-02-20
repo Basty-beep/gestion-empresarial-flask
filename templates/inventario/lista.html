@@ -17,10 +17,12 @@
         Cantidad: {{ info.cantidad }} |
         Categoría: {{ info.categoria }}
 
+        <a href="{{ url_for('editar', nombre=nombre) }}">Editar</a>
+    |
         <a href="{{ url_for('eliminar', nombre=nombre) }}"
-        onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+        onclick="return confirm('¿Estas seguro de que quieres eliminar este producto?')">
         Eliminar
-        </a>
+    </a>
     </li>
 {% else %}
     <li>No hay productos en inventario</li>
