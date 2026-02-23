@@ -1,6 +1,8 @@
 from modulos.inventario import cargar_inventario, guardar_inventario
 
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, jsonify
+
+from flask_sqlalchemy import SQLAlchemy
 
 import json
 
@@ -10,6 +12,18 @@ app = Flask(__name__)
 def inventario():
     datos = cargar_inventario()
     return render_template('inventario/lista.html', datos=datos)
+
+
+# Agregamos el endpoint
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///productos.db'
+db = SQLAlchemy(app)
+
+@app.route('/api/inventario', methods=['GET'])
+def api_inventario():
+    datos = cargar_inventario()
+    return jsonify(datos)
+
 
 # Agregar productos
 
@@ -87,3 +101,5 @@ def editar(nombre):
         nombre=nombre,
         info=datos[nombre]
     )
+if __name__ == '__main__':
+    app.run(debug=True)
