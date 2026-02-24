@@ -77,7 +77,27 @@ def buscar_id(nombre):
         "error": "Producto no encontrado"
     }), 404
 
+# Endpoint DELETE
+@app.route('/api/inventario/<nombre>', methods = ['DELETE'])
+def endpoint_delete(nombre):
 
+    inventario = cargar_inventario()
+
+    if nombre in inventario:
+        eliminado = inventario.pop(nombre)   
+
+        guardar_inventario(inventario)       
+
+        return jsonify({
+            "mensaje": "Producto eliminado correctamente",
+            "producto": nombre,
+            "datos": eliminado
+        }), 200
+
+    # si no encuentra nada devuelve error 404
+    return jsonify({
+        "error": "Producto no encontrado"
+    }), 404
 
 
 
