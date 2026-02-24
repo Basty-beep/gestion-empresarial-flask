@@ -61,7 +61,7 @@ def crear():
     }), 201
 
 # Endpoint GET por id
-@app.route('api/inventario/<nombre>', methods = ['GET'])
+@app.route('/api/inventario/<nombre>', methods = ['GET'])
 def buscar_id(nombre):
     inventario = cargar_inventario()
 
