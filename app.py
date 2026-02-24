@@ -14,7 +14,7 @@ def inventario():
     return render_template('inventario/lista.html', datos=datos)
 
 
-# Agregamos el endpoint
+# Agregamos el endpoint GET
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///productos.db'
 db = SQLAlchemy(app)
@@ -23,6 +23,42 @@ db = SQLAlchemy(app)
 def api_inventario():
     datos = cargar_inventario()
     return jsonify(datos)
+
+# Agregamos endpoint POST
+@app.route('/api/inventario', methods =['POST'])
+def crear():
+   
+    data = request.get_json()
+
+    # Validar que reciba información
+    if not data:
+        return jsonify({"error": "No se recibió JSON"}), 400
+
+    # Ejemplos
+    nombre = data.get("nombre")
+    precio = data.get("precio")
+    stock = data.get("stock")
+
+    if not nombre or precio is None or stock is None:
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
+
+    # 2. Cargar inventario actual
+    inventario = cargar_inventario()
+
+    # 3. Agregar producto
+    inventario[nombre] = {
+        "precio": precio,
+        "stock": stock
+    }
+
+    # 4. Guardar inventario
+    guardar_inventario(inventario)
+
+    # 5. Respuesta exitosa
+    return jsonify({
+        "mensaje": "Producto creado correctamente",
+        "producto": inventario[nombre]
+    }), 201
 
 
 # Agregar productos
