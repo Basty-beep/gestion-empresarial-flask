@@ -11,7 +11,31 @@ app = Flask(__name__)
 @app.route('/inventario')
 def inventario():
     datos = cargar_inventario()
-    return render_template('inventario/lista.html', datos=datos)
+
+    # obtener filtros desde la URL
+    buscar = request.args.get('buscar', '').lower()
+    categoria = request.args.get('categoria', '')
+
+    filtrados = {}
+
+    for nombre, info in datos.items():
+
+        coincide_nombre = buscar in nombre.lower() if buscar else True
+        coincide_categoria = info.get("categoria") == categoria if categoria else True
+
+        if coincide_nombre and coincide_categoria:
+            filtrados[nombre] = info
+
+    # lista de categorías
+    categorias = sorted(set(info.get("categoria", "") for info in datos.values()))
+
+    return render_template(
+        'inventario/lista.html',
+        datos=filtrados,
+        categorias=categorias,
+        buscar=buscar,
+        categoria=categoria
+    )
 
 
 # Agregamos el endpoint GET

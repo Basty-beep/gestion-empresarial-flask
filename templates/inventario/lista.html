@@ -9,21 +9,58 @@
 
 <a href="/inventario/agregar">Agregar producto</a>
 
+<hr>
+
+
+<form method="GET" action="/inventario">
+
+    <input type="text"
+           name="buscar"
+           placeholder="Buscar por nombre"
+           value="{{ buscar }}">
+
+    <select name="categoria">
+
+        <option value="">Todas las categorías</option>
+
+        {% for cat in categorias %}
+            <option value="{{ cat }}"
+            {% if cat == categoria %}selected{% endif %}>
+                {{ cat }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <button type="submit">Buscar</button>
+
+</form>
+
+<p>{{ datos|length }} productos encontrados</p>
+
+<hr>
+
 <ul>
 {% for nombre, info in datos.items() %}
     <li>
-         <b>{{ nombre }}</b> |
+
+        <b>{{ nombre }}</b><br>
+
         Precio: {{ info.precio }} |
         Cantidad: {{ info.cantidad }} |
         Categoría: {{ info.categoria }}
 
+        <br>
+
         <a href="{{ url_for('editar', nombre=nombre) }}">Editar</a>
-    |
+
         <a href="{{ url_for('eliminar', nombre=nombre) }}"
-        onclick="return confirm('¿Estas seguro de que quieres eliminar este producto?')">
-        Eliminar
-    </a>
+           onclick="return confirm('¿Estas seguro de que quieres eliminar este producto?')">
+           Eliminar
+        </a>
+
     </li>
+
 {% else %}
     <li>No hay productos en inventario</li>
 {% endfor %}
