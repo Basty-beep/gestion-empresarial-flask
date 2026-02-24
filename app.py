@@ -60,6 +60,26 @@ def crear():
         "producto": inventario[nombre]
     }), 201
 
+# Endpoint GET por id
+@app.route('api/inventario/<nombre>', methods = ['GET'])
+def buscar_id(nombre):
+    inventario = cargar_inventario()
+
+    # verificar si existe el producto
+    if nombre in inventario:
+        return jsonify({
+            "nombre": nombre,
+            "info": inventario[nombre]
+        }), 200
+
+    # si no existe va a dar error 404
+    return jsonify({
+        "error": "Producto no encontrado"
+    }), 404
+
+
+
+
 
 # Agregar productos
 
