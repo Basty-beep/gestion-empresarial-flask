@@ -1,24 +1,37 @@
+<!DOCTYPE html>
 <html>
-    <h1>Editar producto</h1>
+<head>
+    <title>Editar producto</title>
+</head>
 
-    <form method="POST">
+<body>
 
-        <label>Nombre:</label><br>
-        <input type="text" name="nombre" value="{{ nombre }}"><br><br>
+<h1>Editar producto</h1>
 
-        <label>Precio:</label><br>
-        <input type="number" name="precio" value="{{ info.precio }}"><br><br>
+{% if error %}
+<p style="color:red"><b>{{ error }}</b></p>
+{% endif %}
 
-        <label>Cantidad:</label><br>
-        <input type="number" name="cantidad" value="{{ info.cantidad }}"><br><br>
+<form method="POST">
 
-        <label>Categoria:</label><br>
-        <input type="text" name="categoria" value="{{ info.categoria }}"><br><br>
+    <label>Nombre:</label><br>
+    <input type="text" name="nombre" value="{{ nombre }}" required><br><br>
 
-        <button type="submit">Guardar cambios</button>
+    <label>Precio:</label><br>
+    <input type="number" name="precio" value="{{ info.precio }}" min="0" required><br><br>
 
-    </form>
+    <label>Cantidad:</label><br>
+    <input type="number" name="cantidad" value="{{ info.cantidad }}" min="1" required><br><br>
 
-    <br>
-    <a href="/inventario">Volver</a>
+    <label>Categoria:</label><br>
+    <input type="text" name="categoria" value="{{ info.categoria }}" required><br><br>
+
+    <button type="submit">Guardar cambios</button>
+
+</form>
+
+<br>
+<a href="/inventario">Volver</a>
+
+</body>
 </html>

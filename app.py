@@ -1,32 +1,28 @@
 from modulos.inventario import cargar_inventario, guardar_inventario
-
 from flask import Flask, render_template, request, url_for, redirect, jsonify
 
-from flask_sqlalchemy import SQLAlchemy
-
-import json
-
 app = Flask(__name__)
+
+
+# LISTA INVENTARIO
+
 @app.route('/')
 @app.route('/inventario')
 def inventario():
     datos = cargar_inventario()
 
-    # obtener filtros desde la URL
     buscar = request.args.get('buscar', '').lower()
     categoria = request.args.get('categoria', '')
 
     filtrados = {}
 
     for nombre, info in datos.items():
-
         coincide_nombre = buscar in nombre.lower() if buscar else True
         coincide_categoria = info.get("categoria") == categoria if categoria else True
 
         if coincide_nombre and coincide_categoria:
             filtrados[nombre] = info
 
-    # lista de categorías
     categorias = sorted(set(info.get("categoria", "") for info in datos.values()))
 
     return render_template(
@@ -38,79 +34,80 @@ def inventario():
     )
 
 
-# Agregamos el endpoint GET
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///productos.db'
-db = SQLAlchemy(app)
+# Endpoint GET
 
 @app.route('/api/inventario', methods=['GET'])
 def api_inventario():
     datos = cargar_inventario()
     return jsonify(datos)
 
-# Agregamos endpoint POST
-@app.route('/api/inventario', methods =['POST'])
+# Endpoint POST
+
+@app.route('/api/inventario', methods=['POST'])
 def crear():
-   
+
     data = request.get_json()
 
-    # Validar que reciba información
     if not data:
         return jsonify({"error": "No se recibió JSON"}), 400
 
-    # Ejemplos
     nombre = data.get("nombre")
     precio = data.get("precio")
-    stock = data.get("stock")
+    cantidad = data.get("cantidad")
 
-    if not nombre or precio is None or stock is None:
+    if not nombre or precio is None or cantidad is None:
         return jsonify({"error": "Faltan datos obligatorios"}), 400
 
-    # 2. Cargar inventario actual
+    nombre = nombre.strip().lower()
+
     inventario = cargar_inventario()
 
-    # 3. Agregar producto
+    # VALIDACIONES
+    if nombre in inventario:
+        return jsonify({"error": "El producto ya existe"}), 400
+
+    if precio < 0:
+        return jsonify({"error": "El precio no puede ser negativo"}), 400
+
+    if cantidad <= 0:
+        return jsonify({"error": "La cantidad debe ser positiva"}), 400
+
     inventario[nombre] = {
         "precio": precio,
-        "stock": stock
+        "cantidad": cantidad
     }
 
-    # 4. Guardar inventario
     guardar_inventario(inventario)
 
-    # 5. Respuesta exitosa
     return jsonify({
         "mensaje": "Producto creado correctamente",
         "producto": inventario[nombre]
     }), 201
 
 # Endpoint GET por id
-@app.route('/api/inventario/<nombre>', methods = ['GET'])
+@app.route('/api/inventario/<nombre>', methods=['GET'])
 def buscar_id(nombre):
     inventario = cargar_inventario()
+    nombre = nombre.lower()
 
-    # verificar si existe el producto
     if nombre in inventario:
         return jsonify({
             "nombre": nombre,
             "info": inventario[nombre]
         }), 200
 
-    # si no existe va a dar error 404
-    return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
+    return jsonify({"error": "Producto no encontrado"}), 404
 
 # Endpoint DELETE
-@app.route('/api/inventario/<nombre>', methods = ['DELETE'])
+@app.route('/api/inventario/<nombre>', methods=['DELETE'])
 def endpoint_delete(nombre):
 
     inventario = cargar_inventario()
+    nombre = nombre.lower()
 
     if nombre in inventario:
-        eliminado = inventario.pop(nombre)   
-
-        guardar_inventario(inventario)       
+        eliminado = inventario.pop(nombre)
+        guardar_inventario(inventario)
 
         return jsonify({
             "mensaje": "Producto eliminado correctamente",
@@ -118,54 +115,63 @@ def endpoint_delete(nombre):
             "datos": eliminado
         }), 200
 
-    # si no encuentra nada devuelve error 404
-    return jsonify({
-        "error": "Producto no encontrado"
-    }), 404
+    return jsonify({"error": "Producto no encontrado"}), 404
 
-
-
-# Agregar productos
-
-@app.route('/inventario/agregar', methods = ['GET', 'POST'])
+# Formulario
+@app.route('/inventario/agregar', methods=['GET','POST'])
 def agregar():
+
     if request.method == 'POST':
-        producto = request.form['producto']
-        precio = int(request.form['precio'])
-        cantidad = int(request.form['cantidad'])
+
+        producto = request.form['producto'].strip().lower()
         categoria = request.form['categoria']
 
-        # cargar inventario actual
+        # validar números
+        try:
+            precio = int(request.form['precio'])
+            cantidad = int(request.form['cantidad'])
+        except ValueError:
+            return render_template('inventario/agregar.html',
+                                   error="Precio y cantidad deben ser números")
+
         inventario = cargar_inventario()
 
-        # agregar producto nuevo
+        # VALIDACIONES
+        if producto in inventario:
+            return render_template('inventario/agregar.html',
+                                   error="El producto ya existe")
+
+        if precio < 0:
+            return render_template('inventario/agregar.html',
+                                   error="El precio no puede ser negativo")
+
+        if cantidad <= 0:
+            return render_template('inventario/agregar.html',
+                                   error="La cantidad debe ser mayor a 0")
+
         inventario[producto] = {
             "precio": precio,
             "cantidad": cantidad,
             "categoria": categoria
         }
 
-        # guardar en el archivo json
         guardar_inventario(inventario)
 
-        # volver a la lista
         return redirect(url_for('inventario'))
+
     return render_template('inventario/agregar.html')
 
-
-# Eliminar productos
+# Eliminar producto
 @app.route('/inventario/eliminar/<nombre>')
 def eliminar(nombre):
 
-    # cargar inventario actual
     inventario = cargar_inventario()
+    nombre = nombre.lower()
 
-    # verificar si existe el producto
     if nombre in inventario:
-        del inventario[nombre]   # eliminar producto
+        del inventario[nombre]
         guardar_inventario(inventario)
 
-    # volver a la lista
     return redirect(url_for('inventario'))
 
 # Editar producto
@@ -173,17 +179,56 @@ def eliminar(nombre):
 def editar(nombre):
 
     datos = cargar_inventario()
+    nombre = nombre.lower()
 
+    # verificar existencia
     if nombre not in datos:
         return "Producto no encontrado"
 
     if request.method == 'POST':
 
-        nuevo_nombre = request.form['nombre']
-        precio = int(request.form['precio'])
-        cantidad = int(request.form['cantidad'])
+        nuevo_nombre = request.form['nombre'].strip().lower()
         categoria = request.form['categoria']
 
+        # validar números
+        try:
+            precio = int(request.form['precio'])
+            cantidad = int(request.form['cantidad'])
+        except ValueError:
+            return render_template(
+                'inventario/editar.html',
+                nombre=nombre,
+                info=datos[nombre],
+                error="Precio y cantidad deben ser números"
+            )
+
+        # VALIDACIONES
+        if precio < 0:
+            return render_template(
+                'inventario/editar.html',
+                nombre=nombre,
+                info=datos[nombre],
+                error="El precio no puede ser negativo"
+            )
+
+        if cantidad <= 0:
+            return render_template(
+                'inventario/editar.html',
+                nombre=nombre,
+                info=datos[nombre],
+                error="La cantidad debe ser mayor a 0"
+            )
+
+        # evitar duplicado al cambiar nombre
+        if nuevo_nombre != nombre and nuevo_nombre in datos:
+            return render_template(
+                'inventario/editar.html',
+                nombre=nombre,
+                info=datos[nombre],
+                error="Ya existe un producto con ese nombre"
+            )
+
+        # actualizar
         datos.pop(nombre)
 
         datos[nuevo_nombre] = {
@@ -196,10 +241,12 @@ def editar(nombre):
 
         return redirect(url_for('inventario'))
 
+    # GET -> mostrar formulario
     return render_template(
         'inventario/editar.html',
         nombre=nombre,
         info=datos[nombre]
     )
+
 if __name__ == '__main__':
     app.run(debug=True)

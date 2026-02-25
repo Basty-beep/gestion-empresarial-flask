@@ -11,7 +11,6 @@
 
 <hr>
 
-
 <form method="GET" action="/inventario">
 
     <input type="text"
@@ -20,7 +19,6 @@
            value="{{ buscar }}">
 
     <select name="categoria">
-
         <option value="">Todas las categorías</option>
 
         {% for cat in categorias %}
@@ -29,14 +27,13 @@
                 {{ cat }}
             </option>
         {% endfor %}
-
     </select>
 
     <button type="submit">Buscar</button>
 
 </form>
 
-<p>{{ datos|length }} productos encontrados</p>
+<p><b>{{ datos|length }} productos encontrados</b></p>
 
 <hr>
 
@@ -46,13 +43,15 @@
 
         <b>{{ nombre }}</b><br>
 
-        Precio: {{ info.precio }} |
-        Cantidad: {{ info.cantidad }} |
-        Categoría: {{ info.categoria }}
+        Precio: ${{ info.get('precio', 0) }} |
+        Cantidad: {{ info.get('cantidad', 0) }} |
+        Categoría: {{ info.get('categoria', 'Sin categoría') }}
 
-        <br>
+        <br><br>
 
         <a href="{{ url_for('editar', nombre=nombre) }}">Editar</a>
+
+        |
 
         <a href="{{ url_for('eliminar', nombre=nombre) }}"
            onclick="return confirm('¿Estas seguro de que quieres eliminar este producto?')">
@@ -60,6 +59,8 @@
         </a>
 
     </li>
+
+    <hr>
 
 {% else %}
     <li>No hay productos en inventario</li>
