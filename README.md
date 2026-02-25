@@ -214,3 +214,45 @@ Formularios HTML
 📜 Licencia
 
 Uso educativo.
+
+
+
+
+
+
+🧪 Testing realizado
+✔️ Pruebas funcionales
+
+Se agregaron múltiples productos correctamente
+
+Se editaron productos con cambios persistentes
+
+Se eliminaron productos sin errores
+
+La interfaz web funcionó correctamente
+
+✔️ Pruebas API
+
+GET devuelve inventario en JSON
+
+POST crea productos correctamente
+
+PUT actualiza productos
+
+DELETE elimina productos
+
+✔️ Casos extremos probados
+
+nombres largos
+
+precios altos
+
+cantidades altas
+
+caracteres especiales
+
+productos inexistentes
+
+✔️ Resultado
+
+La aplicación funciona correctamente tras corregir validaciones menores.
